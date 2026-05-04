@@ -1,0 +1,27 @@
+Xây dựng trang web cung cấp template tạo portfolios cho người dùng.
+mô tả ngắn: trang web cho phép người dùng đăng ký tài khoản, đăng nhập vào trang cá nhân. 
+Hệ thống sẽ cung cấp các kiểu UI (1 thành phần nhỏ như biểu đồ, kiểu liệt kê dữ liệu,.. 1 phần của portfolios) cho người dùng lựa chọn, điền thông tin để hiển thị lên trang cá nhân.
+Cho phép chia sẻ link để người khác vào xem portfolios của mình.
+
+
+công nghệ :
+BE : sử dụng spring boot, jwt (access token, refresh token) bảo mật đăng nhập, xác thực người dùng.
+FE : reactjs tailwind xây dựng giao diện hiện đại, đẹp.
+    có dùng redis
+Database : sử dụng mongodb mongodb+srv://admin:admin123@minhtrung.mno0nlr.mongodb.net/portfolios_template
+
+mô tả chức năng.
+User : 
+1. đăng ký
+cho phép người dùng đăng ký bằng email, mật khẩu. Hệ thống gửi otp xác thực trong 5p.
+2. đăng nhập 
+cho phép người dùng đăng nhập bằng email, mật khẩu.
+3. profile
+ngay sau khi đăng nhập hệ thống yêu cầu người dùng điền các thông tin, upload ảnh (không bắt buộc, có thể bỏ qua) để hiển thị các thông tin cá nhân cơ bản.
+
+4. chọn template, kiểu hiển thị dữ liệu.
+người dùng click + để có thể hiển thị danh sách các mẫu hiển thị. điền thông tin cần thiết để hiển thị lên trang cá nhân.
+
+5. chia sẻ
+hiện tại thì chỉ làm cho phép lấy link của người dùng chia sẻ (nếu k đăng nhập thì chỉ có thể xem. khi đăng nhập mà k phải của chủ nhân thì cx chỉ xem, không có quyền edit)
+
