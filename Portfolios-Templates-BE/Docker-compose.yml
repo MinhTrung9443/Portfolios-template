@@ -17,3 +17,5 @@ services:
     environment:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
+    env_file:
+      - .env
