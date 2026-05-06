@@ -1,11 +1,14 @@
 package practice.com.portfoliostemplatesbe.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -26,14 +29,27 @@ public class S3Service {
     @Value("${aws.s3.region}")
     private String region;
 
+    @Value("${aws.s3.access-key}")
+    private String accessKey;
+
+    @Value("${aws.s3.secret-key}")
+    private String secretKey;
+
+    private S3Client s3Client;
+
+    @PostConstruct
+    public void init() {
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        this.s3Client = S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build();
+    }
+
     public String uploadFile(MultipartFile file) {
         String fileName = generateFileName(file.getOriginalFilename());
 
         try {
-            S3Client s3Client = S3Client.builder()
-                    .region(Region.of(region))
-                    .build();
-
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileName)
@@ -54,10 +70,6 @@ public class S3Service {
     public String uploadFile(byte[] fileBytes, String fileName, String contentType) {
         String key = generateFileName(fileName);
 
-        S3Client s3Client = S3Client.builder()
-                .region(Region.of(region))
-                .build();
-
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -70,10 +82,6 @@ public class S3Service {
     }
 
     public void deleteFile(String fileName) {
-        S3Client s3Client = S3Client.builder()
-                .region(Region.of(region))
-                .build();
-
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)

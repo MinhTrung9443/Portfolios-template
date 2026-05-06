@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { userAPI } from "../api";
 
 function Profile() {
@@ -9,7 +9,9 @@ function Profile() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchProfile();
@@ -33,6 +35,27 @@ function Profile() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setMessage({ type: "", text: "" });
+
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+
+    try {
+      const response = await userAPI.uploadAvatar(uploadData);
+      setFormData({ ...formData, avatarUrl: response.data.data.url });
+      setMessage({ type: "success", text: "Avatar uploaded successfully! Click Save to apply." });
+    } catch (err) {
+      setMessage({ type: "error", text: err.response?.data?.message || "Failed to upload avatar." });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -66,6 +89,36 @@ function Profile() {
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
         <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Avatar</label>
+          <div className="flex items-center gap-4">
+            {formData.avatarUrl ? (
+              <img src={formData.avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                No Avatar
+              </div>
+            )}
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                disabled={isUploading}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition text-sm disabled:opacity-50"
+              >
+                {isUploading ? "Uploading..." : "Upload New Avatar"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullName">
             Full Name
           </label>
@@ -93,21 +146,6 @@ function Profile() {
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="avatarUrl">
-            Avatar URL
-          </label>
-          <input
-            type="text"
-            id="avatarUrl"
-            name="avatarUrl"
-            value={formData.avatarUrl}
-            onChange={handleChange}
-            placeholder="https://..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-
         <div className="flex justify-end gap-4">
           <button
             type="button"
@@ -118,7 +156,7 @@ function Profile() {
           </button>
           <button
             type="submit"
-            disabled={isSaving}
+            disabled={isSaving || isUploading}
             className="px-4 py-2 bg-primary text-white rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
           >
             {isSaving ? "Saving..." : "Save"}
