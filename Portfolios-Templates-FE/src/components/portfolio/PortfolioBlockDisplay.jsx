@@ -367,7 +367,7 @@ function SkillsLive({ meta, data, accentClassName, p }) {
   );
 }
 
-function TimelineExperience({ style, data, accentDotClass, p }) {
+function TimelineExperience({ style, data, accentDotClass, p, accentClassName }) {
   const pairs = [
     ["company", "Company"],
     ["institution", "Institution"],
@@ -381,7 +381,6 @@ function TimelineExperience({ style, data, accentDotClass, p }) {
     ["title", "Title"],
   ];
   const rows = pairs.filter(([k]) => data[k]).map(([k, label]) => ({ label, value: data[k] }));
-  if (!rows.length && style === "table") return <KeyValueResidual entries={Object.entries(data)} p={p} />;
 
   const role = asString(data.position || data.degree);
   const place = data.institution ?? data.company;
@@ -390,6 +389,56 @@ function TimelineExperience({ style, data, accentDotClass, p }) {
       ? `${role} · ${asString(place)}`
       : asString(place || role || data.title || data.degree || "");
 
+  if (style === "cards") {
+    return (
+      <div className="mt-6 rounded-2xl border border-white/[0.08] bg-black/35 p-5 sm:p-6 shadow-lg hover:bg-white/[0.02] transition-colors">
+        {titleLine ? <h5 className="text-xl font-bold text-white mb-4">{titleLine}</h5> : null}
+        <dl className="grid gap-3 sm:grid-cols-2 text-sm text-white/80">
+          {rows.map((r, i) => (
+            <div key={i} className="flex flex-col gap-1 bg-white/[0.03] p-3 rounded-lg border border-white/[0.05]">
+              <dt className={`font-mono text-[10px] uppercase tracking-wide ${p.monoMuted}`}>{r.label}</dt>
+              <dd className="whitespace-pre-wrap leading-relaxed font-medium text-white/90">{String(r.value)}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    );
+  }
+
+  if (style === "minimal_list" || style === "minimal") {
+    return (
+      <div className="mt-6 flex flex-col gap-2 bg-black/20 p-4 rounded-xl border border-white/[0.04]">
+        {titleLine ? <h5 className={`text-lg font-semibold ${accentClassName}`}>{titleLine}</h5> : null}
+        <div className="space-y-1 text-sm text-white/70 mt-2">
+          {rows.map((r, i) => (
+            <p key={i} className="flex gap-2">
+              <span className="font-semibold text-white/90 min-w-[80px] shrink-0">{r.label}:</span> 
+              <span className="whitespace-pre-wrap">{String(r.value)}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (style === "table") {
+    return (
+      <div className="mt-6 overflow-x-auto rounded-xl border border-white/[0.08] bg-black/30">
+        <table className="w-full text-left text-sm">
+          <tbody className="divide-y divide-white/[0.08]">
+            {rows.map((r, i) => (
+              <tr key={i} className="hover:bg-white/[0.04] transition-colors">
+                <th className={`px-4 py-3 font-mono text-[11px] uppercase tracking-wide whitespace-nowrap ${p.monoMuted} w-1/4`}>{r.label}</th>
+                <td className="px-4 py-3 text-white/90 whitespace-pre-wrap">{String(r.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // timeline / default
   return (
     <div className="relative mt-6 border-l border-white/15 pl-6 sm:pl-8">
       <div className={`absolute left-[-5px] top-1 h-2.5 w-2.5 rounded-full shadow-lg shadow-black/80 ${accentDotClass}`} aria-hidden />
@@ -411,23 +460,44 @@ function ProjectsHighlight({ meta, data, accentClassName }) {
   const desc = asString(data.description ?? "");
   const img = asString(data.image ?? data.thumbnail ?? data.imageUrl ?? data.screenshot ?? "");
   const style = meta?.defaultConfig?.style || "";
-  const isList = style === "list";
 
+  if (style === "list") {
+    return (
+      <div className="mt-6 flex flex-col sm:flex-row gap-5 items-start border-b border-white/10 pb-6 last:border-0 hover:bg-white/[0.02] p-4 rounded-xl transition-colors">
+        {img ? (
+          <div className="w-full sm:w-40 shrink-0 aspect-video rounded-lg overflow-hidden border border-white/10">
+            <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </div>
+        ) : null}
+        <div className="flex-1 min-w-0">
+          <h5 className="text-lg font-bold text-white">{title || "Project"}</h5>
+          {desc ? <p className="mt-2 text-sm leading-relaxed text-white/70">{desc}</p> : null}
+          <div className="mt-3 flex gap-4 font-mono text-[11px]">
+            {[data.linkLive, data.github, data.liveUrl].map((u, i) =>
+              asString(u) ? <a key={i} href={u} target="_blank" rel="noreferrer" className={`hover:underline ${accentClassName} font-semibold flex items-center gap-1`}>Link {i+1} <span aria-hidden>↗</span></a> : null
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // card_grid and masonry
   return (
-    <div className={`mt-6 rounded-2xl border border-white/[0.08] bg-black/35 ${isList ? "p-4" : ""}`}>
-      <div className={isList ? "" : "grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,10rem)] sm:gap-8"}>
-        {!isList && img ? (
-          <div className="aspect-video overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] sm:aspect-square sm:h-full">
+    <div className={`mt-6 rounded-2xl border border-white/[0.08] bg-black/35 overflow-hidden hover:border-white/20 transition-colors`}>
+      <div className="grid gap-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,12rem)]">
+        {img ? (
+          <div className="aspect-video sm:aspect-auto overflow-hidden bg-white/[0.04] sm:h-full sm:order-2 border-b sm:border-b-0 sm:border-l border-white/10">
             <img src={img} alt="" className="h-full w-full object-cover" loading="lazy" />
           </div>
         ) : null}
-        <div className="min-w-0 p-4 sm:p-5">
-          <h5 className={`text-xl font-bold tracking-tight text-white ${isList ? "text-lg" : ""}`}>{title || "Project"}</h5>
-          {desc ? <p className={`mt-3 leading-relaxed text-white/65 ${isList ? "text-sm line-clamp-4" : ""}`}>{desc}</p> : null}
-          <div className="mt-4 flex flex-wrap gap-2 font-mono text-[11px]">
+        <div className="min-w-0 p-5 sm:p-6 sm:order-1 flex flex-col justify-center">
+          <h5 className="text-xl font-bold tracking-tight text-white">{title || "Project"}</h5>
+          {desc ? <p className="mt-3 text-sm leading-relaxed text-white/65">{desc}</p> : null}
+          <div className="mt-5 flex flex-wrap gap-2 font-mono text-[11px]">
             {[data.linkLive, data.github, data.liveUrl].map((u, i) =>
               asString(u) ? (
-                <a key={i} href={u} target="_blank" rel="noreferrer" className={`rounded-full border px-3 py-1 transition hover:bg-white/[0.08] ${accentClassName} border-current/30 bg-current/[0.08]`}>
+                <a key={i} href={u} target="_blank" rel="noreferrer" className={`rounded-full border px-4 py-1.5 transition hover:bg-white/[0.08] ${accentClassName} border-current/30 bg-current/[0.08] font-medium`}>
                   Open link →
                 </a>
               ) : null
@@ -439,7 +509,7 @@ function ProjectsHighlight({ meta, data, accentClassName }) {
   );
 }
 
-function CertificatesStrip({ meta, data, accentClassName }) {
+function CertificatesStrip({ meta, data, accentClassName, accentDotClass }) {
   const style = meta?.defaultConfig?.style || "";
   const name = asString(data.name ?? data.title);
   const issuer = asString(data.issuer);
@@ -458,17 +528,29 @@ function CertificatesStrip({ meta, data, accentClassName }) {
 
   if (style === "badge") {
     return (
-      <div className="mt-6 flex justify-center rounded-2xl border border-white/10 bg-black/35 p-8">
-        <div className="flex aspect-square max-w-[220px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-white/20 px-8 py-12 text-center">
-          <div className={`mb-3 rounded-full border p-5 ${accentClassName} border-current/40 bg-current/10 text-4xl`}>★</div>
+      <div className="mt-6 flex justify-center rounded-2xl border border-white/10 bg-black/35 p-8 shadow-inner">
+        <div className="flex aspect-square max-w-[220px] flex-col items-center justify-center rounded-full border border-dashed border-white/20 px-8 py-12 text-center bg-gradient-to-b from-white/[0.02] to-transparent relative">
+          <div className={`absolute -top-4 rounded-full border p-3 ${accentClassName} border-current/40 bg-black shadow-lg text-2xl`}>★</div>
           {inner}
         </div>
       </div>
     );
   }
 
+  if (style === "timeline") {
+    return (
+      <div className="relative mt-6 border-l border-white/15 pl-6 sm:pl-8 py-2">
+        <div className={`absolute left-[-5px] top-3 h-2.5 w-2.5 rounded-full shadow-lg shadow-black/80 ${accentDotClass}`} aria-hidden />
+        {inner}
+      </div>
+    );
+  }
+
   return (
-    <div className="mt-6 rounded-2xl border border-white/[0.08] bg-black/35 p-6">{inner}</div>
+    <div className="mt-6 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-black/40 to-black/20 p-6 flex items-center gap-4 hover:bg-white/[0.02] transition-colors">
+      <div className={`text-2xl opacity-80 ${accentClassName}`}>✦</div>
+      <div>{inner}</div>
+    </div>
   );
 }
 
@@ -476,6 +558,19 @@ function ContactStyled({ meta, data, accentClassName }) {
   const style = meta?.defaultConfig?.style || "";
 
   const items = [["email", data.email], ["phone", data.phone], ["linkedin", data.linkedin]].filter(([, v]) => asString(v));
+
+  if (style === "direct_info") {
+    return (
+      <div className="mt-6 flex flex-col gap-3 bg-black/20 p-5 rounded-2xl border border-white/[0.06]">
+        {items.map(([label, val]) => (
+          <div key={label} className="flex items-center gap-4 border-b border-white/10 pb-3 last:border-0 last:pb-0">
+             <span className={`font-mono text-xs uppercase ${accentClassName} w-20 opacity-80`}>{label}</span>
+             <span className="text-white text-sm font-medium">{asString(val)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="mt-6 space-y-4">
@@ -488,9 +583,9 @@ function ContactStyled({ meta, data, accentClassName }) {
         ))}
       </div>
       {style === "form" && (
-        <div className="rounded-xl border border-white/10 border-dashed px-6 py-8 text-center text-sm text-white/45">
-          <span className="font-mono text-xs">Interactive form widgets can attach here · </span>
-          recruiter can use links above today
+        <div className="rounded-xl border border-white/10 border-dashed px-6 py-8 text-center text-sm text-white/45 bg-white/[0.02]">
+          <span className="font-mono text-xs font-semibold text-white/70">Interactive Form Widget Area</span>
+          <p className="mt-2 text-xs">Recruiters can use the direct links above to contact you today.</p>
         </div>
       )}
     </div>
@@ -582,7 +677,7 @@ function renderStructured({ meta, data, accentClassName, p, accentDotClass }) {
     case "education": {
       const keysFlat = ["company", "institution", "position", "degree", "year", "startDate", "endDate", "description", "gpa", "title"];
       omit = keysFlat.filter((k) => data[k] != null && data[k] !== "");
-      return { node: <TimelineExperience style={style} data={data} accentDotClass={accentDotClass} p={p} />, omit: keysFlat };
+      return { node: <TimelineExperience style={style} data={data} accentDotClass={accentDotClass} p={p} accentClassName={accentClassName} />, omit: keysFlat };
     }
     case "projects": {
       const keysProj = ["name", "projectName", "title", "description", "image", "thumbnail", "imageUrl", "screenshot", "linkLive", "github", "liveUrl"];
@@ -590,7 +685,7 @@ function renderStructured({ meta, data, accentClassName, p, accentDotClass }) {
     }
     case "certificates": {
       omit = ["name", "title", "issuer", "date"];
-      return { node: <CertificatesStrip meta={meta} data={data} accentClassName={accentClassName} />, omit };
+      return { node: <CertificatesStrip meta={meta} data={data} accentClassName={accentClassName} accentDotClass={accentDotClass} />, omit };
     }
     case "contact": {
       omit = ["email", "phone", "linkedin"];

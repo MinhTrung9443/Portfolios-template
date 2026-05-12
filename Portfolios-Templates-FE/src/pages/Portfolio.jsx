@@ -3,10 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { portfolioAPI, templateAPI } from "../api";
 
 const THEME_OPTIONS = [
-  { id: "default", label: "Default" },
-  { id: "minimal", label: "Minimal" },
-  { id: "aurora", label: "Aurora" },
-  { id: "midnight", label: "Midnight" },
+  { id: "minimal_dev", label: "Minimal Developer" },
+  { id: "creative_designer", label: "Creative Designer" },
+  { id: "corporate_pro", label: "Corporate Professional" },
+  { id: "glassmorphism", label: "Modern Glassmorphism" },
+  { id: "cyberpunk", label: "Retro / Cyberpunk" },
+  { id: "mobile_first", label: "Mobile First" },
 ];
 
 function newBlock(template) {

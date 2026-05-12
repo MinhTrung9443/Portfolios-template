@@ -3,7 +3,27 @@ import { useParams, Link } from "react-router-dom";
 import { portfolioAPI, templateAPI } from "../api";
 import { PortfolioBlockList } from "../components/portfolio/PortfolioBlockDisplay.jsx";
 
-const THEME_IDS = ["default", "minimal", "aurora", "midnight"];
+import MinimalDev from "./templates/MinimalDev";
+import CreativeDesigner from "./templates/CreativeDesigner";
+import CorporatePro from "./templates/CorporatePro";
+import Glassmorphism from "./templates/Glassmorphism";
+import Cyberpunk from "./templates/Cyberpunk";
+import MobileFirst from "./templates/MobileFirst";
+
+const CUSTOM_TEMPLATES = {
+  minimal_dev: MinimalDev,
+  creative_designer: CreativeDesigner,
+  corporate_pro: CorporatePro,
+  glassmorphism: Glassmorphism,
+  cyberpunk: Cyberpunk,
+  mobile_first: MobileFirst,
+};
+
+const THEME_IDS = [
+  "default", "minimal", "aurora", "midnight",
+  "minimal_dev", "creative_designer", "corporate_pro",
+  "glassmorphism", "cyberpunk", "mobile_first"
+];
 
 /** Visual tokens per preset — tech-forward dark shells, accents shift by theme */
 const PALETTE = {
@@ -180,6 +200,11 @@ function SharedPortfolio() {
         </div>
       </div>
     );
+  }
+
+  const CustomTemplate = CUSTOM_TEMPLATES[view.themeKey];
+  if (CustomTemplate) {
+    return <CustomTemplate view={view} templatesById={templatesById} />;
   }
 
   return (

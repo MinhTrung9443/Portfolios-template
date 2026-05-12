@@ -42,6 +42,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const response = await api.post("/auth/refresh");
+        
+        if (response.data && response.data.success === false) {
+          throw new Error("Refresh token invalid or expired");
+        }
+
         const { accessToken } = response.data.data;
         localStorage.setItem("accessToken", accessToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
