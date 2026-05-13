@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { portfolioAPI, templateAPI } from "../api";
+import { portfolioAPI, templateAPI, userAPI } from "../api";
 
 const THEME_OPTIONS = [
   { id: "minimal_dev", label: "Minimal Developer" },
@@ -118,6 +118,70 @@ function Portfolio() {
         b.id === blockId ? { ...b, data: { ...b.data, [fieldKey]: value } } : b
       ),
     });
+  };
+
+  
+  const handleImageUpload = async (e, blockId, key) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await userAPI.uploadAvatar(formData);
+      const url = res.data?.data?.url;
+      if (url) {
+        updateBlockField(blockId, key, url);
+      }
+    } catch (err) {
+      console.error("Failed to upload image", err);
+      alert("Failed to upload image: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const SkillBuilder = ({ value, onChange }) => {
+    let parsed = [];
+    try {
+      if (typeof value === "string" && value.startsWith("[")) {
+        parsed = JSON.parse(value);
+      } else if (typeof value === "string" && value.trim()) {
+        parsed = value.split(",").map(s => ({ name: s.trim(), level: null }));
+      }
+    } catch (e) {
+      parsed = [];
+    }
+    if (!Array.isArray(parsed)) parsed = [];
+
+    const updateSkill = (index, field, val) => {
+      const next = [...parsed];
+      if (typeof next[index] !== 'object') next[index] = { name: String(next[index]) };
+      next[index] = { ...next[index], [field]: val };
+      onChange(JSON.stringify(next));
+    };
+    const removeSkill = (index) => {
+      const next = parsed.filter((_, i) => i !== index);
+      onChange(JSON.stringify(next));
+    };
+    const addSkill = () => {
+      const next = [...parsed, { name: "", level: 50 }];
+      onChange(JSON.stringify(next));
+    };
+
+    return (
+      <div className="space-y-2 border border-gray-200 p-3 rounded-md bg-gray-50/50">
+        {parsed.map((sk, i) => {
+           const name = typeof sk === 'object' && sk !== null ? (sk.name || sk.label || sk.skill || "") : String(sk || "");
+           const level = typeof sk === 'object' && sk !== null ? sk.level : null;
+           return (
+             <div key={i} className="flex gap-2 items-center">
+               <input type="text" placeholder="Skill name" value={name} onChange={e => updateSkill(i, 'name', e.target.value)} className="flex-1 px-2 py-1 text-sm border rounded" />
+               <input type="number" placeholder="%" min="0" max="100" value={level || ""} onChange={e => updateSkill(i, 'level', e.target.value ? Number(e.target.value) : null)} className="w-20 px-2 py-1 text-sm border rounded" />
+               <button type="button" onClick={() => removeSkill(i)} className="text-red-500 text-sm px-2 font-bold hover:bg-red-50 rounded">X</button>
+             </div>
+           );
+        })}
+        <button type="button" onClick={addSkill} className="text-xs bg-gray-200 px-3 py-1.5 rounded hover:bg-gray-300 font-medium">+ Add Skill</button>
+      </div>
+    );
   };
 
   const handleSubmit = async (e) => {

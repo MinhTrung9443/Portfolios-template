@@ -1,5 +1,13 @@
-import { useMemo } from "react";
-import { parseSkillEntries, asString } from "../../components/portfolio/parseBlockData";
+import { PortfolioBlockList } from "../../components/portfolio/PortfolioBlockDisplay";
+
+const pMinimalDev = {
+  block: "border border-zinc-800 rounded bg-zinc-900/30 p-5 hover:bg-zinc-900/50 transition-all duration-300",
+  badgeCat: "bg-zinc-800 text-zinc-300 border border-zinc-700",
+  monoMuted: "text-zinc-500",
+  monoLabel: "text-zinc-400",
+  dt: "text-zinc-500",
+  dd: "text-zinc-300",
+};
 
 function TerminalHeader({ title }) {
   return (
@@ -55,58 +63,7 @@ export default function MinimalDev({ view, templatesById }) {
         <section id="portfolio" className="space-y-8">
           <h3 className="text-xl text-white font-bold border-b border-zinc-800 pb-2">ls -la portfolio/</h3>
           
-          <div className="grid gap-6">
-            {blocks?.map((block, i) => {
-              const meta = templatesById[block.templateId];
-              const type = meta?.componentType;
-              const data = block.data || {};
-
-              return (
-                <div key={block.id} className="border border-zinc-800 rounded bg-zinc-900/30 p-5 hover:bg-zinc-900/50 transition">
-                  <div className="text-xs text-zinc-500 mb-4 flex justify-between">
-                    <span>drwxr-xr-x</span>
-                    <span>{meta?.name || "Block"}</span>
-                  </div>
-
-                  {type === "skills" && (
-                    <div className="flex flex-wrap gap-2">
-                      {parseSkillEntries(data.skills || data.skillList).map((s, idx) => (
-                        <span key={idx} className="px-2 py-1 bg-zinc-800 text-zinc-300 text-xs rounded border border-zinc-700">
-                          {s.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {(type === "experience" || type === "education") && (
-                    <div className="space-y-2">
-                      <p className="text-zinc-100 font-bold">{data.title || data.position || data.degree} @ {data.company || data.institution}</p>
-                      <p className="text-sm text-zinc-500">{data.startDate} - {data.endDate || "Present"}</p>
-                      <p className="text-sm">{data.description}</p>
-                    </div>
-                  )}
-
-                  {type === "projects" && (
-                    <div>
-                      <p className="text-zinc-100 font-bold mb-2">{(data.name || data.title)}</p>
-                      <p className="text-sm text-zinc-400 mb-3">{data.description}</p>
-                      <div className="flex gap-4">
-                        {data.github && <a href={data.github} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">git clone</a>}
-                        {data.liveUrl && <a href={data.liveUrl} target="_blank" rel="noreferrer" className="text-green-400 hover:underline">curl -I</a>}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Fallback for other types */}
-                  {(!["skills", "experience", "education", "projects"].includes(type)) && (
-                    <pre className="text-xs text-zinc-500 overflow-x-auto">
-                      {JSON.stringify(data, null, 2)}
-                    </pre>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <PortfolioBlockList blocks={blocks ?? []} templatesById={templatesById} p={pMinimalDev} accentKey="minimal" />
         </section>
       </main>
     </div>

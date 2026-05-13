@@ -1,4 +1,13 @@
-import { parseSkillEntries } from "../../components/portfolio/parseBlockData";
+import { PortfolioBlockList } from "../../components/portfolio/PortfolioBlockDisplay";
+
+const pMobileFirst = {
+  block: "bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow mb-5 last:mb-0",
+  badgeCat: "bg-indigo-50 text-indigo-700 border-none font-bold",
+  monoMuted: "text-gray-400 font-bold uppercase text-[10px] tracking-wider",
+  monoLabel: "text-indigo-500",
+  dt: "text-gray-500",
+  dd: "text-gray-900 font-medium",
+};
 
 export default function MobileFirst({ view, templatesById }) {
   const { owner, title, description, blocks } = view;
@@ -41,59 +50,8 @@ export default function MobileFirst({ view, templatesById }) {
           )}
 
           {/* Cards */}
-          <div className="space-y-5">
-            {blocks?.map((block) => {
-              const meta = templatesById[block.templateId];
-              const type = meta?.componentType;
-              const data = block.data || {};
-
-              if (type === "skills") {
-                return (
-                  <div key={block.id} className="bg-white rounded-3xl p-6 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">{meta?.name || "Skills"}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {parseSkillEntries(data.skills || data.skillList).map((s, idx) => (
-                        <span key={idx} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-xl text-[13px] font-semibold">
-                          {s.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-
-              if (type === "projects") {
-                return (
-                  <div key={block.id} className="bg-white rounded-3xl shadow-sm overflow-hidden border border-gray-100">
-                    {(data.image || data.imageUrl) && (
-                      <img src={data.image || data.imageUrl} alt="" className="w-full h-48 object-cover" />
-                    )}
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-gray-900">{data.name || data.title}</h3>
-                      <p className="text-gray-600 mt-2 text-sm line-clamp-3">{data.description}</p>
-                      {data.liveUrl && (
-                        <a href={data.liveUrl} target="_blank" rel="noreferrer" className="mt-4 block w-full py-3 bg-gray-900 text-white text-center rounded-xl font-semibold">
-                          View Site
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              }
-
-              if (type === "experience" || type === "education") {
-                return (
-                  <div key={block.id} className="bg-white rounded-3xl p-6 shadow-sm border-l-4 border-indigo-500">
-                    <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-md">{data.startDate}</span>
-                    <h3 className="text-lg font-bold text-gray-900 mt-3">{data.title || data.position || data.degree}</h3>
-                    <p className="text-indigo-600 font-semibold text-sm mt-1">{data.company || data.institution}</p>
-                    <p className="text-gray-600 mt-3 text-sm">{data.description}</p>
-                  </div>
-                );
-              }
-
-              return null;
-            })}
+          <div>
+            <PortfolioBlockList blocks={blocks ?? []} templatesById={templatesById} p={pMobileFirst} accentKey="default" />
           </div>
         </main>
         
